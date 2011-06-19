@@ -24,7 +24,7 @@ public:
     void addName(QString name);
     void setColor(Qt::GlobalColor globalColor);
     void setColor(QColor color);
-    void setValue(float value);
+    void setChartValue(float value);
 
     QString pname;
     QColor rgbColor;

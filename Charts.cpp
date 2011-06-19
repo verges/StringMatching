@@ -13,7 +13,7 @@ Charts::Charts()
 {
     font.setFamily("verdana");
     font.setPixelSize(15);
-    cltype = Charts::Vertical;
+
     cX = 20;
     cY = 0;
     cW = 100;
@@ -24,13 +24,15 @@ Charts::~Charts()
 {
     pieces.clear();
 }
-int Charts::addPiece(QString name, QColor color, float value, int fileSize, int patternSize, symbol sym)
+
+int Charts::addPiece(QString name,Qt::GlobalColor color,float value, int fileSize, int patternSize, symbol sym)
 {
     this->nPiece++;
+
     pieceNC piece;
     piece.addName(name);
     piece.setColor(color);
-    piece.setValue(value);
+    piece.setChartValue(value);
     piece.fileSize = fileSize;
     piece.patternSize = patternSize;
     piece.sym = sym;
@@ -38,11 +40,19 @@ int Charts::addPiece(QString name, QColor color, float value, int fileSize, int 
 
     return 0;
 }
-int Charts::addPiece(QString name,Qt::GlobalColor color,float value, int fileSize, int patternSize, symbol sym)
+int Charts::addPiece(QString name, QColor color, float value, int fileSize, int patternSize, symbol sym)
 {
-    QColor qcolor = QColor(color);
+    this->nPiece++;
+    pieceNC piece;
+    piece.addName(name);
+    piece.setColor(color);
+    piece.setChartValue(value);
+    piece.fileSize = fileSize;
+    piece.patternSize = patternSize;
+    piece.sym = sym;
+    pieces.append(piece);
 
-    return addPiece(name, qcolor, value, fileSize, patternSize, sym);
+    return 0;
 }
 int Charts::setCords(double x, double y, double w, double h)
 {
@@ -50,8 +60,6 @@ int Charts::setCords(double x, double y, double w, double h)
     this->cY = y;
     this->cW = w;
     this->cH = h;
-    //this->lX = cX+cW+20;
-    //this->lY = cY;
 
     return 0;
 }
@@ -114,7 +122,7 @@ int Charts::draw(QPainter *painter)
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(Qt::darkGray);
 
-                if (pieces[i].value != 0) {
+                if (pieces[i].value!= 0) {
                     painter->drawRect(firstDist+cX+pDist+i*(pW + pDist)-pDist/2,cY+cH-1,pW,-(cH-20)/maxYValue*pieces[i].value+pDist/2 - 5);
                 }
             }
@@ -122,7 +130,7 @@ int Charts::draw(QPainter *painter)
             painter->setBrush(gradient);
             pen.setColor(pieces[i].rgbColor);
             painter->setPen(pen);
-            if (pieces[i].value != 0) {
+            if (pieces[i].value!= 0) {
                 painter->drawRect(firstDist+cX+pDist+i*(pW + pDist),cY+cH,pW,-(cH-20)/maxYValue*pieces[i].value - 5);
             }
             QString label = QString::number(pieces[i].value);
@@ -310,128 +318,130 @@ int Charts::getMaximumYValue() {
 
 int Charts::drawLegend(QPainter *painter)
 {
+    //double ptext = 25;
+    double angle = palpha;
     painter->setPen(Qt::SolidLine);
 
     switch(cltype)
     {
-        case Charts::Vertical:
-        {
-            int dist = 5;
-            painter->setBrush(Qt::white);
-            if (pieces.size() > 0) {
-                painter->drawText(lX+27, lY, "Algorithm\tPatt. size\tFile size");
-            }
-            for (int i=pieces.size()-1;i>=0;i--)
-            {
-                painter->setBrush(pieces[i].rgbColor);
-                int x = lX+dist;
-                int y = lY+dist+i*(painter->fontMetrics().height()+2*dist);
-                painter->drawRect(x,y,painter->fontMetrics().height(),painter->fontMetrics().height());
-                if (pieces[i].fileSize > 0) {
-                    painter->drawText(x+painter->fontMetrics().height()+dist,y+painter->fontMetrics().height()/2+dist,
-                    pieces[i].pname + "\t" + QString::number(pieces[i].patternSize) + "\t" + QString::number(pieces[i].fileSize) + " KB");
-                } else {
-                    painter->drawText(x+painter->fontMetrics().height()+dist,y+painter->fontMetrics().height()/2+dist,
-                    pieces[i].pname + "\t" + QString::number(pieces[i].patternSize) + "\t" + " < 1 KB");
-                }
-            }
-            break;
+    case Charts::Vertical:
+    {
+        int dist = 5;
+        painter->setBrush(Qt::white);
+        if (pieces.size() > 0) {
+            painter->drawText(lX+27, lY, "Algorithm\tPatt. size\tFile size");
         }
-        case Charts::ScatterLegend:
+        for (int i=pieces.size()-1;i>=0;i--)
         {
-            int dist = 5;
-            if (pieces.size() > 0) {
-                painter->drawText(lX+27, lY, "Algorithm\tSymbol");
-                painter->drawText(lX+27, lY+200, "Blue: short time");
-                painter->drawText(lX+27, lY+220, "Red: long time");
+            painter->setBrush(pieces[i].rgbColor);
+            int x = lX+dist;
+            int y = lY+dist+i*(painter->fontMetrics().height()+2*dist);
+            painter->drawRect(x,y,painter->fontMetrics().height(),painter->fontMetrics().height());
+            if (pieces[i].fileSize > 0) {
+                painter->drawText(x+painter->fontMetrics().height()+dist,y+painter->fontMetrics().height()/2+dist,
+                                  pieces[i].pname + "\t" + QString::number(pieces[i].patternSize) + "\t" + QString::number(pieces[i].fileSize) + " KB");
+            } else {
+                painter->drawText(x+painter->fontMetrics().height()+dist,y+painter->fontMetrics().height()/2+dist,
+                                  pieces[i].pname + "\t" + QString::number(pieces[i].patternSize) + "\t" + " < 1 KB");
             }
-
-            QList<QString> algList;
-
-            for (int i=pieces.size()-1;i>=0;i--)
-            {
-                if (!algList.contains(pieces.at(i).pname)) {
-
-                    algList.append(pieces.at(i).pname);
-                    painter->setPen(Qt::SolidLine);
-                    int x = lX+dist+70;
-                    int y = lY+dist+(algList.size()-1)*(painter->fontMetrics().height()+2*dist) - 10;
-
-                    painter->drawText(x - 70 +painter->fontMetrics().height()+dist,y + 10 +painter->fontMetrics().height()/2+dist,
-                                      pieces[i].pname + "\t");
-
-                    QPen pen;
-                    if (pieces.at(i).sym == circle) {
-                        pen.setWidth(3);
-                        painter->setPen(pen);
-                        painter->drawEllipse(x+50,
-                                             y+painter->fontMetrics().height()/2+dist,
-                                             10,10);
-                    } else if (pieces.at(i).sym == rectangle) {
-                        pen.setWidth(3);
-                        painter->setPen(pen);
-                        painter->drawRect(x+50,
-                                          y+painter->fontMetrics().height()/2+dist,
-                                          10,10);
-                    } else if (pieces.at(i).sym == dot) {
-                        pen.setWidth(3);
-                        painter->setPen(pen);
-                        painter->drawRect(x+50,
-                                          y+painter->fontMetrics().height()/2+dist,
-                                          10,10);
-                        pen.setWidth(8);
-                        painter->setPen(pen);
-                        painter->drawPoint(x+50+5,
-                                           y+painter->fontMetrics().height()/2+dist+5);
-                    } else if (pieces.at(i).sym == triangle) {
-                        pen.setWidth(3);
-                        painter->setPen(pen);
-                        painter->drawLine(x+50+5,
-                                          y+painter->fontMetrics().height()/2+dist,
-                                          x+50,
-                                          y+painter->fontMetrics().height()/2+dist + 10);
-                        painter->drawLine(x+50,
-                                          y+painter->fontMetrics().height()/2+dist + 10,
-                                          x+50+10,
-                                          y+painter->fontMetrics().height()/2+dist + 10);
-                        painter->drawLine(x+50+10,
-                                          y+painter->fontMetrics().height()/2+dist + 10,
-                                          x+50+5,
-                                          y+painter->fontMetrics().height()/2+dist);
-                    } else if (pieces.at(i).sym == revTriangle) {
-                        pen.setWidth(3);
-                        painter->setPen(pen);
-                        painter->drawLine(x+50,
-                                          y+painter->fontMetrics().height()/2+dist,
-                                          x+50+5,
-                                          y+painter->fontMetrics().height()/2+dist + 10);
-                        painter->drawLine(x+50+5,
-                                          y+painter->fontMetrics().height()/2+dist + 10,
-                                          x+50+10,
-                                          y+painter->fontMetrics().height()/2+dist);
-                        painter->drawLine(x+50,
-                                          y+painter->fontMetrics().height()/2+dist,
-                                          x+50+10,
-                                          y+painter->fontMetrics().height()/2+dist);
-                    } else if (pieces.at(i).sym == cross) {
-                        pen.setWidth(3);
-                        painter->setPen(pen);
-                        painter->drawLine(x+50,
-                                          y+painter->fontMetrics().height()/2+dist,
-                                          x+50+10,
-                                          y+painter->fontMetrics().height()/2+dist + 10);
-                        painter->drawLine(x+50,
-                                          y+painter->fontMetrics().height()/2+dist + 10,
-                                          x+50+10,
-                                          y+painter->fontMetrics().height()/2+dist);
-
-                    }
-                }
-            }
-            break;
         }
+        break;
     }
 
+    case Charts::ScatterLegend:
+    {
+        int dist = 5;
+        if (pieces.size() > 0) {
+            painter->drawText(lX+27, lY, "Algorithm\tSymbol");
+            painter->drawText(lX+27, lY+200, "Blue: short time");
+            painter->drawText(lX+27, lY+220, "Red: long time");
+        }
+
+        QList<QString> algList;
+
+        for (int i=pieces.size()-1;i>=0;i--)
+        {
+            if (!algList.contains(pieces.at(i).pname)) {
+
+                algList.append(pieces.at(i).pname);
+                painter->setPen(Qt::SolidLine);
+                int x = lX+dist+70;
+                int y = lY+dist+(algList.size()-1)*(painter->fontMetrics().height()+2*dist) - 10;
+
+                painter->drawText(x - 70 +painter->fontMetrics().height()+dist,y + 10 +painter->fontMetrics().height()/2+dist,
+                                  pieces[i].pname + "\t");
+
+                QPen pen;
+                if (pieces.at(i).sym == circle) {
+                    pen.setWidth(3);
+                    painter->setPen(pen);
+                    painter->drawEllipse(x+50,
+                                         y+painter->fontMetrics().height()/2+dist,
+                                         10,10);
+                } else if (pieces.at(i).sym == rectangle) {
+                    pen.setWidth(3);
+                    painter->setPen(pen);
+                    painter->drawRect(x+50,
+                                      y+painter->fontMetrics().height()/2+dist,
+                                      10,10);
+                } else if (pieces.at(i).sym == dot) {
+                    pen.setWidth(3);
+                    painter->setPen(pen);
+                    painter->drawRect(x+50,
+                                      y+painter->fontMetrics().height()/2+dist,
+                                      10,10);
+                    pen.setWidth(8);
+                    painter->setPen(pen);
+                    painter->drawPoint(x+50+5,
+                                       y+painter->fontMetrics().height()/2+dist+5);
+                } else if (pieces.at(i).sym == triangle) {
+                    pen.setWidth(3);
+                    painter->setPen(pen);
+                    painter->drawLine(x+50+5,
+                                      y+painter->fontMetrics().height()/2+dist,
+                                      x+50,
+                                      y+painter->fontMetrics().height()/2+dist + 10);
+                    painter->drawLine(x+50,
+                                      y+painter->fontMetrics().height()/2+dist + 10,
+                                      x+50+10,
+                                      y+painter->fontMetrics().height()/2+dist + 10);
+                    painter->drawLine(x+50+10,
+                                      y+painter->fontMetrics().height()/2+dist + 10,
+                                      x+50+5,
+                                      y+painter->fontMetrics().height()/2+dist);
+                } else if (pieces.at(i).sym == revTriangle) {
+                    pen.setWidth(3);
+                    painter->setPen(pen);
+                    painter->drawLine(x+50,
+                                      y+painter->fontMetrics().height()/2+dist,
+                                      x+50+5,
+                                      y+painter->fontMetrics().height()/2+dist + 10);
+                    painter->drawLine(x+50+5,
+                                      y+painter->fontMetrics().height()/2+dist + 10,
+                                      x+50+10,
+                                      y+painter->fontMetrics().height()/2+dist);
+                    painter->drawLine(x+50,
+                                      y+painter->fontMetrics().height()/2+dist,
+                                      x+50+10,
+                                      y+painter->fontMetrics().height()/2+dist);
+                } else if (pieces.at(i).sym == cross) {
+                    pen.setWidth(3);
+                    painter->setPen(pen);
+                    painter->drawLine(x+50,
+                                      y+painter->fontMetrics().height()/2+dist,
+                                      x+50+10,
+                                      y+painter->fontMetrics().height()/2+dist + 10);
+                    painter->drawLine(x+50,
+                                      y+painter->fontMetrics().height()/2+dist + 10,
+                                      x+50+10,
+                                      y+painter->fontMetrics().height()/2+dist);
+
+                }
+            }
+        }
+        break;
+    }
+    }
     return 0;
 }
 
@@ -451,7 +461,7 @@ void pieceNC::setColor(QColor color)
     rgbColor = color;
 }
 
-void pieceNC::setValue(float value)
+void pieceNC::setChartValue(float value)
 {
-    value = value;
+    this->value = value;
 }
