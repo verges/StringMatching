@@ -11,7 +11,7 @@
 #include <QWidget>
 #include <enums.h>
 
-class ResultsChartWidget : public QWidget {
+class   ResultsChartWidget : public QWidget {
     Q_OBJECT
 public:
     ResultsChartWidget(QWidget *parent = 0);

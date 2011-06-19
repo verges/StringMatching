@@ -50,8 +50,8 @@ void ResultsChartWidget::paintEvent(QPaintEvent * event) {
     Charts resultsChart;
 
     if (cType == histogram) {
-        resultsChart.setType(Charts::Histogramm);//{Histogramm,Pie,DPie,Scatter};
-        resultsChart.setLegendType(Charts::Vertical);//{Round,Vertical,ScatterLegend}
+        resultsChart.setType(Charts::Histogramm);
+        resultsChart.setLegendType(Charts::Vertical);
         resultsChart.setLegendCords(500,10);
     } else if (cType == scatter) {
         resultsChart.setType(Charts::Scatter);

@@ -63,8 +63,8 @@ void MainWindow::showAboutDialog() {
 
 void MainWindow::chooseTextFile() {
     textFilePath = QFileDialog::getOpenFileName(this, tr("Choose file..."),
-            "~/",
-            tr("Text files (*.txt *.html *.xml)"));
+                                                "~/",
+                                                tr("Text files (*.txt *.html *.xml)"));
     mainWindow.fileBrowser->setText(textFilePath);
 
     if (loadFile(textFilePath, textFileContents)) {
@@ -88,9 +88,7 @@ bool MainWindow::loadFile(QString & textFilePath, QString & textFileContents) {
         //textFileContents = textFile.readAll();
         //int fileSize = textFile.size();
         mainWindow.progressBar->setMaximum(textFile.size());
-        //mainWindow.consoleBrowser->clear();
         textFileContents = "";
-        //std::cout << textFile.size() << " " << textFileContents.size() << std::endl;
         QTextStream stream(&textFile);
         int refresher = 0;
         mainWindow.statusLabel->setText("Loading file...");
@@ -98,7 +96,6 @@ bool MainWindow::loadFile(QString & textFilePath, QString & textFileContents) {
             line = stream.read(300);
             textFileContents += line;
 
-            //mainWindow.consoleBrowser->append(line);
             refresher++;
             if (refresher == 300) {
                 mainWindow.progressBar->setValue(textFileContents.size());
@@ -125,9 +122,9 @@ QString MainWindow::getNameShortcut(QString name) {
     } else if (name == "Morris-Pratt") {
         return "M-P";
     } else if (name == "Boyer-Moore") {
-            return "B-M";
+        return "B-M";
     } else if (name == "TwoWay") {
-            return "TW";
+        return "TW";
     }else {
         return "unknown";
     }
@@ -163,15 +160,8 @@ void MainWindow::processFile() {
                 timer.start();
                 results = bf.find(pattern, pattern.size(), textFileContents, textFileContents.size(), mainWindow.progressBar);
                 elapsedTime = timer.elapsed();
-            }/* else if (mainWindow.chooseAlgCombo->currentText() == "Search Or") {
-                QByteArray   patternBytes  = pattern.toAscii();
-                char * patternPtr = patternBytes.data();
-                QByteArray   textBytes  = textFileContents.toAscii();
-                char * textPtr = textBytes.data();
-                timer.start();
-                results = searchOr(patternPtr, pattern.size(), textPtr, textFileContents.size());
-                elapsedTime = timer.elapsed();
-            }*/ else if (mainWindow.chooseAlgCombo->currentText() == "Morris-Pratt") {
+            }
+            else if (mainWindow.chooseAlgCombo->currentText() == "Morris-Pratt") {
                 MorrisPratt mp = MorrisPratt();
                 timer.start();
                 results = mp.find(pattern, pattern.size(), textFileContents, textFileContents.size(), mainWindow.progressBar);
@@ -183,19 +173,13 @@ void MainWindow::processFile() {
             	results = bm.find(pattern, pattern.size(), textFileContents, textFileContents.size(), mainWindow.progressBar);
             	elapsedTime = timer.elapsed();
             }
-//            else if (mainWindow.chooseAlgCombo->currentText() == "TurboBM") {
-//            	Turbo_BM tbm = Turbo_BM();
-//                timer.start();
-//                results = tbm.find(pattern, pattern.size(), textFileContents, textFileContents.size(), mainWindow.progressBar);
-//                elapsedTime = timer.elapsed();
-//             }
             else if (mainWindow.chooseAlgCombo->currentText() == "TwoWay") {
                 TwoWay tw = TwoWay();
                 timer.start();
                 results = tw.find(pattern, pattern.size(), textFileContents, textFileContents.size(), mainWindow.progressBar);
                 elapsedTime = timer.elapsed();
-             }
-            	else {
+            }
+            else {
                 mainWindow.statusLabel->setText("Algorithm not supported");
                 return;
             }
@@ -212,7 +196,6 @@ void MainWindow::processFile() {
             mainWindow.statusLabel->setText("Processing finished");
 
             mainWindow.consoleBrowser->setText(output);
-
         }
     }
     generalLock = false;
@@ -234,7 +217,6 @@ QString MainWindow::processOutput(QList<int> results, int elapsedTime) {
         if (mainWindow.listOfFoundCheckBox->isChecked()) {
             int refresher = 0;
             int period = results.size() / 100;
-            //std::cout << period << std::endl;
             for (int i = 0; i < results.size(); i++) {
                 refresher++;
                 output += QString::number(results.at(i));
@@ -255,65 +237,3 @@ QString MainWindow::processOutput(QList<int> results, int elapsedTime) {
 
     return output;
 }
-
-/*#define REHASH(a, b, h) ((((h) - (a)*d) << 1) + (b))
-
-QList<int> MainWindow::karpRabin(QString & pattern, int m, QString & text, int n) {
-   QList<int> results;
-   int d, hx, hy, i, j;
-
-   // Preprocessing
-   // computes d = 2^(m-1) with
-   //   the left-shift operator
-   for (d = i = 1; i < m; ++i)
-      d = (d<<1);
-
-   for (hy = hx = i = 0; i < m; ++i) {
-      hx = ((hx<<1) + pattern.at(i));
-      hy = ((hy<<1) + text.at(i));
-   }
-
-   // Searching
-   j = 0;
-   while (j <= n-m) {
-      if (hx == hy && memcmp(x, y + j, m) == 0)
-         results.append(j);
-      hy = REHASH(y[j], y[j + m], hy);
-      ++j;
-   }
-
-}*/
-
-/*int MainWindow::preSo(char * pattern, int m, unsigned int S[]) {
-    unsigned int j, lim;
-    int i;
-    for (i = 0; i < 10; ++i)
-        S[i] = ~0;
-    for (lim = i = 0, j = 1; i < m; ++i, j <<= 1) {
-        S[pattern[i]] &= ~j;
-        lim |= j;
-    }
-    lim = ~(lim >> 1);
-    return (lim);
-}
-
-QList<int> MainWindow::searchOr(char * pattern, int m, char * text, int n) {
-    unsigned int lim, state;
-    unsigned int S[10];
-    QList<int> results;
-    int j;
-    if (m > 64)
-        return results; //error("SO: Use pattern size <= word size");
-
-    // Preprocessing
-    lim = preSo(pattern, m, S);
-
-    // Searching
-    for (state = ~0, j = 0; j < n; ++j) {
-        state = (state << 1) | S[text[j]];
-        if (state < lim)
-            results.append(j - m + 1);
-    }
-
-    return results;
-}*/

@@ -22,13 +22,13 @@ class pieceNC
 public:
     explicit pieceNC();
     void addName(QString name);
-    void setColor(Qt::GlobalColor);
+    void setColor(Qt::GlobalColor globalColor);
     void setColor(QColor color);
-    void setPerc(float Percentage);
+    void setValue(float value);
 
     QString pname;
     QColor rgbColor;
-    float pPerc;
+    float value;
     float xValue;
     float patternSize;
     float fileSize;
@@ -44,10 +44,10 @@ public:
 
     explicit Charts();
     ~Charts();
-    enum type {Histogramm, Pie, Dpie, Scatter};
-    enum legend_type{/*Horizontal,*/ Vertical, Round, ScatterLegend};
-    int addPiece(QString name,Qt::GlobalColor,float Percentage, int fileSize, int patternSize, symbol sym);
-    int addPiece(QString name,QColor, float Percentage, int fileSize, int patternSize, symbol sym);
+    enum type {Histogramm, Scatter};
+    enum legend_type{Vertical, ScatterLegend};
+    int addPiece(QString name,Qt::GlobalColor,float value, int fileSize, int patternSize, symbol sym);
+    int addPiece(QString name,QColor, float value, int fileSize, int patternSize, symbol sym);
     int setCords(double x, double y, double w, double h);
     int setLegendCords(int x, int y);
     int setType(Charts::type t);
@@ -66,10 +66,6 @@ private:
     QVector<pieceNC> pieces;
     int ctype, cltype;
     QFont font;
-    //QPainter *cpainter;
-    QPointF GetPoint(double angle, double R1 = 0, double R2 = 0);
-    int GetQuater(double angle);
-    double Angle360(double angle);
     int getMaximumYValue();
     int getMaximumFileSizeValue();
     int getMaximumPatternSizeValue();
